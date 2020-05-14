@@ -11,7 +11,7 @@ name = "profile"
 path = "lib.rs"
 
 [features]
-unstable = ["servo_allocator"]
+unstable = ["pkalloc"]
 
 [dependencies]
 profile_traits = {path = "../profile_traits"}
@@ -33,4 +33,6 @@ regex = "1.1"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies]
 libc = "0.2"
-servo_allocator = {path = "../allocator", optional = true}
+#servo_allocator = {path = "../allocator", optional = true}
+pkalloc = { git = "https://github.com/securesystemslab/pkru-safe-pkalloc.git", optional = true }
+#pkmallocator = { git = "https://github.com/securesystemslab/pkru-safe-pkmallocator.git", optional = true }

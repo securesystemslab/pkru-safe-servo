@@ -304,6 +304,9 @@ class CommandBase(object):
         self.config["build"].setdefault("thinlto", False)
         self.config["build"].setdefault("webgl-backtrace", False)
         self.config["build"].setdefault("dom-backtrace", False)
+        self.config["build"].setdefault("profile-mpk", False)
+        self.config["build"].setdefault("instr-mpk", False)
+        self.config["build"].setdefault("test-mpk", False)
 
         self.config.setdefault("android", {})
         self.config["android"].setdefault("sdk", "")
@@ -320,8 +323,7 @@ class CommandBase(object):
     def default_toolchain(self):
         if self._default_toolchain is None:
             filename = path.join(self.context.topdir, "rust-toolchain")
-            with open(filename) as f:
-                self._default_toolchain = f.read().strip()
+            self._default_toolchain = "mpk-step"
         return self._default_toolchain
 
     def call_rustup_run(self, args, **kwargs):
@@ -343,7 +345,14 @@ class CommandBase(object):
             toolchain = self.toolchain()
             if platform.system() == "Windows":
                 toolchain += "-x86_64-pc-windows-msvc"
-            args = ["rustup" + BIN_SUFFIX, "run", "--install", toolchain] + args
+            if self.config["build"]["profile-mpk"]:
+                args = ["rustup" + BIN_SUFFIX, "run", "--install", toolchain] + args + ["--", "-C", "enable-untrusted=dynamic", "-Zsanitizer=mpk"]
+            elif self.config["build"]["instr-mpk"]:
+                args = ["rustup" + BIN_SUFFIX, "run", "--install", toolchain] + args + ["--", "-C", "enable-untrusted=dynamic", "-C", "mpk_use=TestResults"]
+            elif self.config["build"]["test-mpk"]:
+                args = ["rustup" + BIN_SUFFIX, "run", "--install", toolchain] + args + ["--", "-C", "mpk_test"]
+            else:
+                args = ["rustup" + BIN_SUFFIX, "run", "--install", toolchain] + args
         else:
             args[0] += BIN_SUFFIX
         return call(args, **kwargs)

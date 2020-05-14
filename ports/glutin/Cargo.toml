@@ -56,6 +56,7 @@ libc = "0.2"
 log = "0.4"
 rust-webvr = { version = "0.11", features = ["glwindow"] }
 tinyfiledialogs = "3.0"
+pkalloc = { git = "https://github.com/securesystemslab/pkru-safe-pkalloc.git" }
 
 [target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
 image = "0.21"

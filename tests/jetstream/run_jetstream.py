@@ -18,8 +18,8 @@ TEST_SERVER_PORT = 8192
 
 
 # Run servo and print / parse the results for a specific Dromaeo module.
-def run_servo(servo_exe, tests):
-    url = "http://localhost:{0}/dromaeo/web/index.html?{1}&automated&post_json".format(TEST_SERVER_PORT, tests)
+def run_servo(servo_exe):
+    url = "http://localhost:{0}/index.html?report=true".format(TEST_SERVER_PORT)
     print('running: {} {} -z -f'.format(servo_exe, url))
     args = [servo_exe, url, "-z", "-f"]
     return subprocess.Popen(args)
@@ -33,25 +33,26 @@ def print_usage():
 # Handle the POST at the end
 class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_POST(self):
-        print("Sending POST request.")
+        print("\n\nSending Final POST request.")
         self.send_response(200)
         self.end_headers()
-        self.wfile.write("<HTML>POST OK.<BR><BR>")
-        length = int(self.headers.getheader('content-length'))
-        parameters = urlparse.parse_qs(self.rfile.read(length))
+        #self.wfile.write("<HTML>POST OK.<BR><BR>")
+        #length = int(self.headers.getheader('content-length'))
+        #parameters = urlparse.parse_qs(self.rfile.read(length))
         self.server.got_post = True
-        self.server.post_data = parameters['data']
+        #self.server.post_data = parameters['data']
 
     def log_message(self, format, *args):
         return
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 4:
-        tests = sys.argv[1]
-        servo_exe = sys.argv[2]
-        base_dir = sys.argv[3]
+    if len(sys.argv) == 3:
+        # tests = sys.argv[1]
+        servo_exe = sys.argv[1]
+        base_dir = sys.argv[2]
         os.chdir(base_dir)
+        print(os.getcwd())
 
         # Ensure servo binary can be found
         if not os.path.isfile(servo_exe):
@@ -61,16 +62,15 @@ if __name__ == '__main__':
         # Start the test server
         server = BaseHTTPServer.HTTPServer(('', TEST_SERVER_PORT), RequestHandler)
 
-        print("Testing Dromaeo on Servo!")
-        proc = run_servo(servo_exe, tests)
+        print("Testing JetStream2 on Servo!")
+        proc = run_servo(servo_exe)
         server.got_post = False
         while not server.got_post:
             server.handle_request()
-        data = json.loads(server.post_data[0])
-        os.chdir("../../")
-        with open('dromaeo-result.json', 'w') as f:
-            print("Writing dromaeo results to file...")
-            json.dump(data, f, indent=4)
+        #data = json.loads(server.post_data[0])
+        #print(data)
+        proc.terminate()
+        proc.wait()
         #n = 0
         #l = 0
         #for test in data:
@@ -80,7 +80,8 @@ if __name__ == '__main__':
         #print("-{0}-|-{1}-".format("-" * l, "-" * n))
         #for test in data:
         #    print(" {0}{1} | {2}".format(test, " " * (l - len(test)), data[test]))
-        proc.terminate()
-        proc.wait()
+        #proc.terminate()
+        #proc.wait()
     else:
         print_usage()
+

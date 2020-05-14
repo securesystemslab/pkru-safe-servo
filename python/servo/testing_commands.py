@@ -765,6 +765,99 @@ class MachCommands(CommandBase):
         return check_call(
             [run_file, "|".join(tests), bin_path, base_dir])
 
+    @Command('test-jetstream',
+             description='Run the JetStream2 test suite',
+             category='testing')
+    @CommandArgument('--release', '-r', action='store_true',
+                     help='Run the release build')
+    @CommandArgument('--dev', '-d', action='store_true',
+                     help='Run the dev build')
+    def test_jetstream(self, release, dev):
+        return self.jetstream_test_runner(release, dev)
+
+    def jetstream_test_runner(self, release, dev):
+        self.ensure_bootstrapped()
+        base_dir = path.abspath(path.join("tests", "jetstream"))
+        jetstream_dir = path.join(base_dir, "jetstream")
+        run_file = path.join(base_dir, "run_jetstream.py")
+
+        # Clone the JetStream2 repository if it doesn't exist
+        if not os.path.isdir(jetstream_dir):
+            check_call(
+                ["git", "clone", "https://github.com/securesystemslab/pkru-safe-JetStream2.git", jetstream_dir])
+
+        # Run pull in  case the JetStream2 repo was updated since last test run
+        check_call(
+            ["git", "-C", jetstream_dir, "pull"])
+
+        # Check that a release servo build exists
+        bin_path = path.abspath(self.get_binary_path(release, dev))
+
+        return check_call(
+            [run_file, bin_path, jetstream_dir])
+
+    @Command('test-kraken',
+             description='Run the Kraken-1.1 test suite',
+             category='testing')
+    @CommandArgument('--release', '-r', action='store_true',
+                     help='Run the release build')
+    @CommandArgument('--dev', '-d', action='store_true',
+                     help='Run the dev build')
+    def test_kraken(self, release, dev):
+        return self.kraken_test_runner(release, dev)
+
+    def kraken_test_runner(self, release, dev):
+        self.ensure_bootstrapped()
+        base_dir = path.abspath(path.join("tests", "kraken"))
+        kraken_dir = path.join(base_dir, "kraken")
+        run_file = path.join(base_dir, "run_kraken.py")
+
+        # Clone the Kraken-1.1 repository if it doesn't exist
+        if not os.path.isdir(kraken_dir):
+            check_call(
+                ["git", "clone", "https://github.com/securesystemslab/pkru-safe-kraken.git", kraken_dir])
+
+        # Run pull in  case the Kraken-1.1 repo was updated since last test run
+        check_call(
+            ["git", "-C", kraken_dir, "pull"])
+
+        # Check that a release servo build exists
+        bin_path = path.abspath(self.get_binary_path(release, dev))
+
+        return check_call(
+            [run_file, bin_path, kraken_dir])
+
+    @Command('test-octane',
+             description='Run the Octane2 test suite',
+             category='testing')
+    @CommandArgument('--release', '-r', action='store_true',
+                     help='Run the release build')
+    @CommandArgument('--dev', '-d', action='store_true',
+                     help='Run the dev build')
+    def test_octane(self, release, dev):
+        return self.octane_test_runner(release, dev)
+
+    def octane_test_runner(self, release, dev):
+        self.ensure_bootstrapped()
+        base_dir = path.abspath(path.join("tests", "octane"))
+        octane_dir = path.join(base_dir, "octane")
+        run_file = path.join(base_dir, "run_octane.py")
+
+        # Clone the Octane2 repository if it doesn't exist
+        if not os.path.isdir(octane_dir):
+            check_call(
+                ["git", "clone", "https://github.com/securesystemslab/pkru-safe-octane2.git", octane_dir])
+
+        # Run pull in  case the Octane2 repo was updated since last test run
+        check_call(
+            ["git", "-C", octane_dir, "pull"])
+
+        # Check that a release servo build exists
+        bin_path = path.abspath(self.get_binary_path(release, dev))
+
+        return check_call(
+            [run_file, bin_path, octane_dir])
+
     def set_software_rendering_env(self, use_release):
         # On Linux and mac, find the OSMesa software rendering library and
         # add it to the dynamic linker search path.

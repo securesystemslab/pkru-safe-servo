@@ -31,6 +31,8 @@ use std::panic;
 use std::process;
 use std::thread;
 
+use pkalloc::pk_is_safe_addr;
+
 pub mod platform {
     #[cfg(target_os = "macos")]
     pub use crate::platform::macos::deinit;
@@ -66,15 +68,58 @@ fn install_crash_handler() {
         }
     }
 
-    signal!(Sig::SEGV, handler); // handle segfaults
+    //signal!(Sig::SEGV, handler); // handle segfaults
     signal!(Sig::ILL, handler); // handle stack overflow and unsupported CPUs
     signal!(Sig::IOT, handler); // handle double panics
     signal!(Sig::BUS, handler); // handle invalid memory access
 }
 
-pub fn main() {
-    install_crash_handler();
+#[no_mangle]
+#[inline(never)]
+pub fn servo_pause_here(p: &Box<[u8]>) {
+    println!("Value in Box: {:?}", p[0]);
+}
 
+pub fn main() {
+    
+    //let mut v = Vec::new();
+    let mut p :Box<[u8]>;
+    //let target = 0x414141414141 as *const u8;
+    /*
+    let target = 0x168000000000 as *const u8;
+    if unsafe{!pk_is_safe_addr(target as *mut u8)}{
+        println!("Unable to Allocate Secret at {:?}!", target);
+        return
+    }
+    */
+    /*
+    let mut found = false;
+    for i in 20..40{
+        p = vec![0; 1usize<<i].into_boxed_slice();
+        let start: *const u8 = &p[0];
+        let end: *const u8 = unsafe{ start.offset(1isize <<i) };
+        //println!("Start addr = {:?}", start);
+        //println!("End addr = {:?}", end);
+        if target >= start && target < end{
+            found = true;
+            break;
+        }
+    }
+    if !found{
+        println!("Unable to Allocate Secret at {:?}!", target);
+        return
+    }
+    */
+    p = vec![0; 1usize<<20].into_boxed_slice();
+    let target : *const u8 = &p[0];
+    println!("Target Address: {:?}", target);
+    servo_pause_here(&p);
+
+    let ptr = unsafe{target as *mut u64};
+    unsafe{*ptr = 0x42;}
+    
+    install_crash_handler();
+    //unsafe { mpk_SEGV_fault_handler(); }
     resources::init();
 
     // Parse the command line options and store them globally
@@ -133,5 +178,11 @@ pub fn main() {
 
     App::run();
 
-    platform::deinit()
+    platform::deinit();
+    
+    println!("Secret Address: {:?}", ptr);
+    println!("Value in P: {:?}", p[0]);
+    println!("Expected Secret value: 0x42");
+    println!("Secret value: {:#x}", unsafe{*ptr});
+    
 }

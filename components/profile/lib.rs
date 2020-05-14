@@ -12,6 +12,8 @@ extern crate profile_traits;
 extern crate serde;
 
 #[allow(unsafe_code)]
+extern crate pkalloc as jemalloc_sys;
+#[allow(unsafe_code)]
 mod heartbeats;
 #[allow(unsafe_code)]
 pub mod mem;

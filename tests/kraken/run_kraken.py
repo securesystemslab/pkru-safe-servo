@@ -13,13 +13,13 @@ import urlparse
 import json
 
 
-# Port to run the HTTP server on for Dromaeo.
+# Port to run the HTTP server on for Kraken.
 TEST_SERVER_PORT = 8192
 
 
-# Run servo and print / parse the results for a specific Dromaeo module.
-def run_servo(servo_exe, tests):
-    url = "http://localhost:{0}/dromaeo/web/index.html?{1}&automated&post_json".format(TEST_SERVER_PORT, tests)
+# Run servo and print / parse the results for a specific Kraken module.
+def run_servo(servo_exe):
+    url = "http://localhost:{0}/driver.html".format(TEST_SERVER_PORT)
     print('running: {} {} -z -f'.format(servo_exe, url))
     args = [servo_exe, url, "-z", "-f"]
     return subprocess.Popen(args)
@@ -27,7 +27,7 @@ def run_servo(servo_exe, tests):
 
 # Print usage if command line args are incorrect
 def print_usage():
-    print("USAGE: {0} tests servo_binary dromaeo_base_dir".format(sys.argv[0]))
+    print("USAGE: {0} tests servo_binary kraken_base_dir".format(sys.argv[0]))
 
 
 # Handle the POST at the end
@@ -47,10 +47,9 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 4:
-        tests = sys.argv[1]
-        servo_exe = sys.argv[2]
-        base_dir = sys.argv[3]
+    if len(sys.argv) == 3:
+        servo_exe = sys.argv[1]
+        base_dir = sys.argv[2]
         os.chdir(base_dir)
 
         # Ensure servo binary can be found
@@ -61,25 +60,16 @@ if __name__ == '__main__':
         # Start the test server
         server = BaseHTTPServer.HTTPServer(('', TEST_SERVER_PORT), RequestHandler)
 
-        print("Testing Dromaeo on Servo!")
-        proc = run_servo(servo_exe, tests)
+        print("Testing Kraken on Servo!")
+        proc = run_servo(servo_exe)
         server.got_post = False
         while not server.got_post:
             server.handle_request()
         data = json.loads(server.post_data[0])
-        os.chdir("../../")
-        with open('dromaeo-result.json', 'w') as f:
-            print("Writing dromaeo results to file...")
+        os.chdir("../../../")
+        with open('kraken-result.json', 'w') as f:
+            print("Writing kraken results to file...")
             json.dump(data, f, indent=4)
-        #n = 0
-        #l = 0
-        #for test in data:
-        #    n = max(n, len(data[test]))
-        #    l = max(l, len(test))
-        #print("\n Test{0} | Time".format(" " * (l - len("Test"))))
-        #print("-{0}-|-{1}-".format("-" * l, "-" * n))
-        #for test in data:
-        #    print(" {0}{1} | {2}".format(test, " " * (l - len(test)), data[test]))
         proc.terminate()
         proc.wait()
     else:
