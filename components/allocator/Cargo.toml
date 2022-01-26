@@ -11,7 +11,7 @@ path = "lib.rs"
 
 [target.'cfg(not(windows))'.dependencies]
 #jemalloc-sys = { version = "0.1.4" }
-pkmallocator = { git = "https://github.com/securesystemslab/pkru-safe-pkmallocator.git" }
+pkmallocator = { git = "https://github.com/securesystemslab/pkru-safe-pkmallocator.git", branch = "no-mpk" }
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["heapapi"] }
