@@ -34,5 +34,5 @@ regex = "1.1"
 [target.'cfg(not(target_os = "windows"))'.dependencies]
 libc = "0.2"
 #servo_allocator = {path = "../allocator", optional = true}
-pkalloc = { git = "https://github.com/securesystemslab/pkru-safe-pkalloc.git", branch = "no-mpk", optional = true }
+pkalloc = { git = "https://github.com/securesystemslab/pkru-safe-pkalloc.git", optional = true }
 #pkmallocator = { git = "https://github.com/securesystemslab/pkru-safe-pkmallocator.git", branch = "no-mpk", optional = true }
